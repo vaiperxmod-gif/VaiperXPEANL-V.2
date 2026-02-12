@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ViperX-V2">
+    
+    <title>VIPER-X PANEL V.2 COMPLETE</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@400;700&display=swap');
+
+        :root {
+            --primary-red: #ff3b30;
+            --primary-green: #34c759;
+            --neon-glow: 0 0 15px rgba(255, 59, 48, 0.7);
+        }
+
+        /* พื้นหลังขยับ (Moving Mesh) */
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background: linear-gradient(-45deg, #050505, #1a0202, #2a0000, #000000);
+            background-size: 400% 400%;
+            animation: gradientMove 12s ease infinite;
+            font-family: 'Montserrat', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; color: #fff; overflow: hidden;
+            -webkit-user-select: none;
+        }
+
+        #particles-js { position: absolute; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+
+        /* Notification */
+        #toast {
+            position: absolute; top: 30px; right: 30px;
+            padding: 12px 25px; border-radius: 50px; font-size: 13px; font-weight: bold;
+            z-index: 1000; opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateY(-20px) scale(0.5); pointer-events: none;
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .toast-on { background: rgba(52, 199, 89, 0.3); color: #fff; opacity: 1 !important; transform: translateY(0) scale(1) !important; box-shadow: 0 0 20px rgba(52, 199, 89, 0.4); }
+        .toast-off { background: rgba(255, 59, 48, 0.3); color: #fff; opacity: 1 !important; transform: translateY(0) scale(1) !important; box-shadow: 0 0 20px rgba(255, 59, 48, 0.4); }
+
+        .glass {
+            background: rgba(15, 15, 15, 0.85);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px; box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+            z-index: 10;
+        }
+
+        #login-screen { width: 340px; padding: 45px 30px; text-align: center; }
+        .login-box h2 { font-family: 'Orbitron'; letter-spacing: 5px; color: var(--primary-red); text-shadow: var(--neon-glow); }
+        .login-box input { width: 85%; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; text-align: center; margin-bottom: 20px; outline: none; }
+        .login-box button { width: 95%; padding: 15px; background: var(--primary-red); color: #fff; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; box-shadow: var(--neon-glow); }
+
+        #loading-container { display: none; margin-top: 30px; }
+        .progress-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background: var(--primary-red); box-shadow: 0 0 15px var(--primary-red); }
+
+        #main-panel { display: none; width: 95vw; max-width: 650px; height: 600px; flex-direction: column; overflow: hidden; position: relative; }
+        .window-header { height: 50px; background: rgba(255,255,255,0.05); display: flex; align-items: center; padding: 0 20px; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .header-title { font-family: 'Orbitron'; color: #ffee58; font-size: 11px; }
+
+        .main-container { display: flex; flex: 1; overflow: hidden; position: relative; }
+        .sidebar { width: 150px; background: rgba(0,0,0,0.4); border-right: 1px solid rgba(255,255,255,0.05); overflow-y: auto; }
+        .nav-item { padding: 22px 10px; text-align: center; font-size: 10px; color: #666; cursor: pointer; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .nav-item.active { color: #fff; background: rgba(255, 59, 48, 0.15); border-left: 4px solid var(--primary-red); text-shadow: 0 0 10px var(--primary-red); }
+
+        .content { flex: 1; padding: 25px; display: none; overflow-y: auto; animation: slideIn 0.4s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        .content.active { display: block; }
+
+        .section-header { font-family: 'Orbitron'; font-size: 12px; color: var(--primary-red); margin: 15px 0; border-left: 4px solid var(--primary-red); padding-left: 10px; }
+
+        .grid-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .option-item { background: rgba(255, 255, 255, 0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; gap: 10px; font-size: 10px; }
+
+        .slider-container { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 15px; }
+        .val-text { font-family: 'Orbitron'; color: var(--primary-red); font-weight: bold; }
+        input[type="range"] { width: 100%; -webkit-appearance: none; background: #333; height: 4px; border-radius: 10px; margin-top: 10px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #fff; border-radius: 50%; border: 3px solid var(--primary-red); }
+
+        select { width: 100%; padding: 12px; background: #000; color: #fff; border-radius: 10px; border: 1px solid #444; font-family: 'Orbitron'; font-size: 10px; margin-bottom: 10px; outline: none; }
+
+        #console-logs {
+            position: absolute; bottom: 60px; right: 20px; width: 180px; height: 80px;
+            background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 8px; font-family: monospace; font-size: 8px;
+            color: #34c759; overflow-y: auto; pointer-events: none;
+        }
+
+        .btn-game { width: 100%; padding: 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: #1a1a1a; color: white; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .btn-game:active { background: var(--primary-red); transform: translateY(2px); }
+
+        .footer-info { position: absolute; bottom: 10px; width: 100%; display: flex; justify-content: space-around; font-size: 8px; color: #444; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+<div id="particles-js"></div>
+<div id="toast"></div>
+
+<div id="login-screen" class="glass">
+    <div class="login-box">
+        <h2>VIPER-X</h2>
+        <input type="password" id="pass-input" placeholder="ACCESS CODE">
+        <button onclick="handleLogin()">AUTHENTICATE</button>
+        <div id="loading-container">
+            <div class="progress-bg"><div id="p-bar" class="progress-bar"></div></div>
+            <div id="p-text" style="color:var(--primary-red); font-size:10px; margin-top:10px; font-family:'Orbitron'">BOOTING 0%</div>
+        </div>
+    </div>
+</div>
+
+<div id="main-panel" class="glass">
+    <div class="window-header">
+        <div style="display:flex; gap:8px;">
+            <div style="background:#ff5f56; width:10px; height:10px; border-radius:50%"></div>
+            <div style="background:#ffbd2e; width:10px; height:10px; border-radius:50%"></div>
+            <div style="background:#27c93f; width:10px; height:10px; border-radius:50%"></div>
+        </div>
+        <div class="header-title" id="top-fps">VIPER-X PANEL V.2 | 00.0 FPS</div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="nav-item active" onclick="popClick(); openTab(event, 'aimbot')">MAGNETIC</div>
+            <div class="nav-item" onclick="popClick(); openTab(event, 'sensi')">REGEDIT</div>
+            <div class="nav-item" onclick="popClick(); openTab(event, 'fixfps')">FIX-FPS</div>
+            <div class="nav-item" onclick="popClick(); openTab(event, 'boster')">BOOSTER</div>
+            <div class="nav-item" style="color:var(--primary-green)" onclick="popClick(); openTab(event, 'startgame')">START GAME</div>
+        </div>
+
+        <div id="aimbot" class="content active">
+            <div class="section-header">MAGNETIC MODULE</div>
+            <div class="grid-options">
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> Magnetic Head 99.9%</div>
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> Auto Head-Suck</div>
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> Aim Lock Persistent</div>
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> Smooth Aim Pro</div>
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> Focus Lock V3</div>
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> Snap V4 Pro</div>
+            </div>
+            <div class="section-header">SUCK INTENSITY</div>
+            <div class="slider-container">
+                <div style="display:flex; justify-content:space-between; font-size:10px;"><span>POWER LEVEL</span><span class="val-text" id="suck-val">99%</span></div>
+                <input type="range" min="0" max="100" value="99" oninput="updateVal('suck-val', this.value + '%')">
+            </div>
+        </div>
+
+        <div id="sensi" class="content">
+            <div class="section-header">SENSITIVITY</div>
+            <div class="slider-container">
+                <div style="display:flex; justify-content:space-between; font-size:10px;"><span>DPI BOOSTER</span><span class="val-text" id="dpi-val">480</span></div>
+                <input type="range" min="320" max="1500" value="480" oninput="updateVal('dpi-val', this.value)">
+            </div>
+            <div class="slider-container">
+                <div style="display:flex; justify-content:space-between; font-size:10px;"><span>TOUCH RESPONSE</span><span class="val-text" id="ms-val">0.5ms</span></div>
+                <input type="range" min="0.1" max="5.0" step="0.1" value="0.5" oninput="updateVal('ms-val', this.value + 'ms')">
+            </div>
+            <div class="option-item" style="width:100%"><input type="checkbox" onchange="notify(this)"> Anti-Shake Stability 3.0</div>
+        </div>
+
+        <div id="fixfps" class="content">
+            <div class="section-header">FPS UNLOCKER</div>
+            <div class="slider-container">
+                <div style="display:flex; justify-content:space-between; font-size:10px;"><span>FPS LIMIT</span><span class="val-text" id="fps-val">60 FPS</span></div>
+                <input type="range" min="0" max="240" value="60" oninput="updateVal('fps-val', this.value + ' FPS')">
+            </div>
+        </div>
+
+        <div id="startgame" class="content">
+            <div class="section-header">DEVICE CALIBRATION</div>
+            <select id="device" onchange="popClick(); addLog('Device: ' + this.value)">
+                <optgroup label="iPhone 16 / 17 Series">
+                    <option>iPhone 17 Pro Max</option><option>iPhone 17 Pro</option><option>iPhone 17 Plus</option><option>iPhone 17</option>
+                    <option>iPhone 16 Pro Max</option><option>iPhone 16 Pro</option><option>iPhone 16 Plus</option><option>iPhone 16</option>
+                </optgroup>
+                <optgroup label="iPhone 14 / 15 Series">
+                    <option>iPhone 15 Pro Max</option><option>iPhone 15 Pro</option><option>iPhone 15 Plus</option><option>iPhone 15</option>
+                    <option>iPhone 14 Pro Max</option><option>iPhone 14 Pro</option><option>iPhone 14 Plus</option><option>iPhone 14</option>
+                </optgroup>
+                <optgroup label="iPhone 11 / 12 / 13 Series">
+                    <option>iPhone 13 Pro Max</option><option>iPhone 13 mini</option>
+                    <option>iPhone 12 Pro Max</option><option>iPhone 12 mini</option>
+                    <option>iPhone 11 Pro Max</option><option>iPhone 11</option>
+                </optgroup>
+                <optgroup label="Classic iPhone">
+                    <option>iPhone X / XS Max</option><option>iPhone XR</option>
+                    <option>iPhone 8 Plus</option><option>iPhone 8</option>
+                    <option>iPhone 7 Plus</option><option>iPhone 7</option>
+                    <option>iPhone SE (All Gen)</option>
+                </optgroup>
+            </select>
+            <button class="btn-game" onclick="launchGame('Free Fire')">FREE FIRE <div class="game-icon"></div></button>
+            <button class="btn-game" onclick="launchGame('Free Fire MAX')">FF MAX <div class="game-icon"></div></button>
+        </div>
+
+        <div id="boster" class="content">
+            <div class="section-header">OPTIMIZE</div>
+            <div class="option-item" style="width:100%; margin-bottom:10px;"><input type="checkbox" id="fps-ultra-check" onchange="toggleBoster(this)"> FPS ULTRA MODE</div>
+            <div class="grid-options">
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> Anti-Ban (Safe)</div>
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> Clean Logs</div>
+            </div>
+        </div>
+
+        <div id="console-logs"><div id="log-text">System Ready...</div></div>
+    </div>
+
+    <div class="footer-info">
+        <span>HWID: <b id="hwid-val"></b></span>
+        <span>PING: <b id="ping-val">24ms</b></span>
+        <span>SERVER: <b style="color:var(--primary-green)">GLOBAL</b></span>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script>
+    let isBosterActive = false;
+    const popSound = new Audio("data:audio/wav;base64,UklGRj4AAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRIDAAAAZv9m/2b/Zv9m/2b/Zv8=");
+    popSound.volume = 0.4;
+
+    particlesJS('particles-js', {"particles":{"number":{"value":50},"color":{"value":"#ffffff"},"opacity":{"value":0.2},"size":{"value":1},"move":{"enable":true,"speed":1.2,"direction":"top"}}});
+
+    function popClick() { popSound.currentTime = 0; popSound.play(); }
+
+    function addLog(msg) {
+        const log = document.getElementById('log-text');
+        log.innerHTML += `<br>> ${msg}`;
+        document.getElementById('console-logs').scrollTop = 1000;
+    }
+
+    function notify(checkbox) {
+        popClick();
+        const state = checkbox.checked ? "ON" : "OFF";
+        const label = checkbox.parentElement.innerText.trim();
+        addLog(label + ": " + state);
+        const t = document.getElementById('toast');
+        t.innerText = checkbox.checked ? "SYSTEM ACTIVATED" : "OFF";
+        t.className = checkbox.checked ? "toast-on" : "toast-off";
+        setTimeout(() => t.className = "", 2000);
+    }
+
+    function handleLogin() {
+        if(document.getElementById('pass-input').value === "vaiperx") {
+            popClick();
+            document.getElementById('loading-container').style.display = 'block';
+            let p = 0;
+            const inv = setInterval(() => {
+                p += Math.floor(Math.random() * 12) + 2;
+                if(p >= 100) {
+                    p = 100; clearInterval(inv);
+                    setTimeout(() => {
+                        document.getElementById('login-screen').style.display = 'none';
+                        document.getElementById('main-panel').style.display = 'flex';
+                        addLog("Authenticated Device...");
+                    }, 500);
+                }
+                document.getElementById('p-bar').style.width = p + '%';
+                document.getElementById('p-text').innerText = "BOOTING " + p + "%";
+            }, 80);
+        } else { alert("ACCESS DENIED"); }
+    }
+
+    function openTab(e, n) {
+        let c = document.getElementsByClassName("content");
+        for (let i = 0; i < c.length; i++) c[i].style.display = "none";
+        let ni = document.getElementsByClassName("nav-item");
+        for (let i = 0; i < ni.length; i++) ni[i].classList.remove("active");
+        document.getElementById(n).style.display = "block";
+        e.currentTarget.classList.add("active");
+        addLog("Switch Tab: " + n.toUpperCase());
+    }
+
+    function updateVal(id, val) { popClick(); document.getElementById(id).innerText = val; }
+    function toggleBoster(cb) { isBosterActive = cb.checked; notify(cb); }
+
+    function launchGame(g) {
+        popClick(); addLog("Injecting Config: " + g);
+        setTimeout(() => { window.location.href = g.includes("MAX") ? "freefiremax://" : "freefire://"; }, 1500);
+    }
+
+    document.getElementById('hwid-val').innerText = Math.random().toString(36).substr(2, 8).toUpperCase();
+    setInterval(() => {
+        let min = isBosterActive ? 220 : 50, max = isBosterActive ? 240 : 60;
+        let fps = (Math.random() * (max - min) + min).toFixed(1);
+        document.getElementById('top-fps').innerText = `VIPER-X PANEL V.2 | ${fps} FPS`;
+        document.getElementById('ping-val').innerText = (Math.random() * 10 + 20).toFixed(0) + "ms";
+    }, 600);
+</script>
+</body>
+</html>
